@@ -1,0 +1,61 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  devtools:
+    add-properties: true
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect # Changed dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true # Bật show-sql cho phát triển
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=badminton_shop;encrypt=false;trustServerCertificate=true # Changed URL
+    username: sa
+    password: vinh512005 # Replace with your actual password
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver # Changed driver
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+openapi:
+  service:
+    api-docs: backend-service
+    server: http://localhost:${server.port}
+    title: Backend service
+    version: 1.0.0
+
+#spring:
+#  config:
+#    activate:
+#      on-profile: dev
+#  devtools:
+#    add-properties: true
+#  jpa:
+#    database-platform: org.hibernate.dialect.MySQLDialect
+#    hibernate:
+#      ddl-auto: create
+#    show-sql: true # Bật show-sql cho phát triển
+#    properties:
+#      hibernate:
+#        format_sql: true
+#  datasource:
+#    url: jdbc:mysql://localhost:3307/testdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+#    username: root
+#    password: password
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#springdoc:
+#  api-docs:
+#    enabled: true
+#  swagger-ui:
+#    enabled: true
+#openapi:
+#  service:
+#    api-docs: backend-service
+#    server: http://localhost:${server.port}
+#    title: Backend service
+#    version: 1.0.0
