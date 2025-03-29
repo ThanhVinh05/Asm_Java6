@@ -4,7 +4,6 @@ import com.poly.common.Gender;
 import com.poly.controller.request.UserCreationRequest;
 import com.poly.controller.request.UserPasswordRequest;
 import com.poly.controller.request.UserUpdateRequest;
-import com.poly.controller.response.UserPageResponse;
 import com.poly.controller.response.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,37 +27,30 @@ public class MockupUserController {
                                        @RequestParam(defaultValue = "20") int size) {
         UserResponse userResponse1 = new UserResponse();
         userResponse1.setId(1l);
-        userResponse1.setFirstName("Phan");
-        userResponse1.setLastName("Vinh");
+        userResponse1.setFirstName("Tay");
+        userResponse1.setLastName("Java");
         userResponse1.setGender(Gender.MALE);
         userResponse1.setBirthday(new Date());
         userResponse1.setUsername("admin");
-        userResponse1.setEmail("vinhptps38840@gmail.com");
-        userResponse1.setPhone("0373696299");
+        userResponse1.setEmail("admin@gmail.com");
+        userResponse1.setPhone("0975118228");
 
         UserResponse userResponse2 = new UserResponse();
         userResponse2.setId(2l);
-        userResponse2.setFirstName("Mai");
-        userResponse2.setLastName("Nam");
+        userResponse2.setFirstName("Leo");
+        userResponse2.setLastName("Messi");
         userResponse2.setGender(Gender.MALE);
         userResponse2.setBirthday(new Date());
         userResponse2.setUsername("user");
-        userResponse2.setEmail("nammvps38841@gmail.com");
-        userResponse2.setPhone("0905021503");
+        userResponse2.setEmail("user@gmail.com");
+        userResponse2.setPhone("0971234567");
 
         List<UserResponse> userList = List.of(userResponse1, userResponse2);
-
-        UserPageResponse userPageResponse = new UserPageResponse();
-        userPageResponse.setPageNumber(page);
-        userPageResponse.setPageSize(size);
-        userPageResponse.setTotalPages(1);
-        userPageResponse.setTotalElements(2);
-        userPageResponse.setUsers(userList);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "user list");
-        result.put("data", userPageResponse);
+        result.put("data", userList);
 
         return result;
     }
@@ -67,20 +59,20 @@ public class MockupUserController {
     @GetMapping("/{userId}")
     public Map<String, Object> getUserDetail(@PathVariable Long userId) {
 
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(1l);
-        userResponse.setFirstName("Phan");
-        userResponse.setLastName("Vinh");
-        userResponse.setGender(Gender.MALE);
-        userResponse.setBirthday(new Date());
-        userResponse.setUsername("admin");
-        userResponse.setEmail("vinhptps38840@gmail.com");
-        userResponse.setPhone("0373696299");
+        UserResponse userDetail = new UserResponse();
+        userDetail.setId(userId);
+        userDetail.setFirstName("Tay");
+        userDetail.setLastName("Java");
+        userDetail.setGender(Gender.MALE);
+        userDetail.setBirthday(new Date());
+        userDetail.setUsername("admin");
+        userDetail.setEmail("admin@gmail.com");
+        userDetail.setPhone("0975118228");
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "user");
-        result.put("data", userResponse);
+        result.put("data", userDetail);
 
         return result;
     }
@@ -92,7 +84,7 @@ public class MockupUserController {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.CREATED.value());
         result.put("message", "User created successfully");
-        result.put("data", 1);
+        result.put("data", 3);
 
         return result;
     }
