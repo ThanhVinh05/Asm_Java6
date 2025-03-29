@@ -18,7 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserPageResponse findAll(String keyword, String sort, int page, int size) {
@@ -193,14 +193,14 @@ public class UserServiceImpl implements UserService {
     public void changePassword(UserPasswordRequest req) {
         log.info("Changing password for user: {}", req);
 
-//        // Get user by id
-//        UserEntity user = getUserEntity(req.getId());
-//        if (req.getPassword().equals(req.getConfirmPassword())) {
-//            user.setPassword(passwordEncoder.encode(req.getPassword()));
-//        }
-//
-//        userRepository.save(user);
-//        log.info("Changed password for user: {}", user);
+        // Get user by id
+        UserEntity user = getUserEntity(req.getId());
+        if (req.getPassword().equals(req.getConfirmPassword())) {
+            user.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+
+        userRepository.save(user);
+        log.info("Changed password for user: {}", user);
     }
 
     @Override
