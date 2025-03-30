@@ -1,6 +1,6 @@
 package com.poly.service.impl;
 
-import com.poly.common.UserStatus;
+import com.poly.common.Status;
 import com.poly.controller.request.UserCreationRequest;
 import com.poly.controller.request.UserPasswordRequest;
 import com.poly.controller.request.UserUpdateRequest;
@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(req.getEmail());
 
         user.setType(req.getType());
-        user.setStatus(UserStatus.NONE);
+        user.setStatus(Status.ACTIVE);
 
         userRepository.save(user);
         log.info("Saved user: {}", user);
@@ -208,7 +208,7 @@ public class UserServiceImpl implements UserService {
 
         // Get user by id
         UserEntity user = getUserEntity(id);
-        user.setStatus(UserStatus.INACTIVE);
+        user.setStatus(Status.INACTIVE);
 
         userRepository.save(user);
         log.info("Deleted user id: {}", id);

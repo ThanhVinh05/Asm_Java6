@@ -1,7 +1,7 @@
 package com.poly.model;
 
 import com.poly.common.Gender;
-import com.poly.common.UserStatus;
+import com.poly.common.Status;
 import com.poly.common.UserType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -47,7 +47,7 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 255)
-    private UserStatus status;
+    private Status status;
 
     @Column(name = "created_at", length = 255)
     @Temporal(TemporalType.TIMESTAMP)

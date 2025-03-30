@@ -1,5 +1,6 @@
 package com.poly.model;
 
+import com.poly.common.Status;
 import jakarta.persistence.*;
 import jdk.jfr.Category;
 import lombok.Getter;
@@ -35,6 +36,10 @@ public class ProductEntity {
 
     @Column(name = "stock_quantity")
     private Integer stockQuantity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 255)
+    private Status status;
 
     @Column(name = "category_id")
     private Long categoryId;

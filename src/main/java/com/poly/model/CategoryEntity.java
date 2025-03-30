@@ -19,7 +19,7 @@ public class CategoryEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "category_name", nullable = false, length = 255)
+    @Column(name = "category_name",unique = true, nullable = false, length = 255)
     private String categoryName;
 
     @Column(name = "created_at", length = 255)

@@ -1,12 +1,9 @@
 package com.poly.controller.response;
 
-import com.poly.common.Gender;
-import jakarta.persistence.Column;
 import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -19,5 +16,6 @@ public class ProductResponse implements Serializable {
     private String image;
     private String description;
     private BigDecimal productPrice;
+    private Long categoryId;
     // more
 }

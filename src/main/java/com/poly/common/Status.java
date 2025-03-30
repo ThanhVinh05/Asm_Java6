@@ -1,5 +1,5 @@
 package com.poly.common;
 
-public enum UserStatus {
+public enum Status {
     NONE, ACTIVE, INACTIVE
 }
