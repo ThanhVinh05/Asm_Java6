@@ -15,18 +15,15 @@ import java.util.List;
 @Getter
 @ToString
 public class UserCreationRequest implements Serializable {
-    @NotBlank(message = "firstName must be not blank")
-    private String firstName;
 
-    @NotBlank(message = "firstName must be not blank")
-    private String lastName;
-    private Gender gender;
-    private Date birthday;
+    @NotBlank(message = "UserName must be not blank")
     private String username;
+    private Date birthday;
+    private Gender gender;
+    private String phone;
 
     @Email(message = "Email invalid")
     private String email;
-    private String phone;
     private UserType type;
     private List<AddressRequest> addresses; // home,office
 }

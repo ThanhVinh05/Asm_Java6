@@ -9,9 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Query(value = "select u from UserEntity u where u.status='ACTIVE' " +
-            "and (lower(u.firstName) like :keyword " +
-            "or lower(u.lastName) like :keyword " +
-            "or lower(u.username) like :keyword " +
+            "and(lower(u.username) like :keyword " +
             "or lower(u.phone) like :keyword " +
             "or lower(u.email) like :keyword)")
     Page<UserEntity> searchByKeyword(String keyword, Pageable pageable);

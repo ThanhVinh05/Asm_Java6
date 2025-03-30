@@ -86,11 +86,9 @@ public class UserServiceImpl implements UserService {
 
         return UserResponse.builder()
                 .id(id)
-                .firstName(userEntity.getFirstName())
-                .lastName(userEntity.getLastName())
-                .gender(userEntity.getGender())
-                .birthday(userEntity.getBirthday())
                 .username(userEntity.getUsername())
+                .birthday(userEntity.getBirthday())
+                .gender(userEntity.getGender())
                 .phone(userEntity.getPhone())
                 .email(userEntity.getEmail())
                 .build();
@@ -117,13 +115,12 @@ public class UserServiceImpl implements UserService {
         }
 
         UserEntity user = new UserEntity();
-        user.setFirstName(req.getFirstName());
-        user.setLastName(req.getLastName());
-        user.setGender(req.getGender());
-        user.setBirthday(req.getBirthday());
-        user.setEmail(req.getEmail());
-        user.setPhone(req.getPhone());
         user.setUsername(req.getUsername());
+        user.setBirthday(req.getBirthday());
+        user.setGender(req.getGender());
+        user.setPhone(req.getPhone());
+        user.setEmail(req.getEmail());
+
         user.setType(req.getType());
         user.setStatus(UserStatus.NONE);
 
@@ -135,11 +132,9 @@ public class UserServiceImpl implements UserService {
             List<AddressEntity> addresses = new ArrayList<>();
             req.getAddresses().forEach(address -> {
                 AddressEntity addressEntity = new AddressEntity();
-                addressEntity.setApartmentNumber(address.getApartmentNumber());
-                addressEntity.setFloor(address.getFloor());
-                addressEntity.setBuilding(address.getBuilding());
+                addressEntity.setHomeNumber(address.getHomeNumber());
                 addressEntity.setStreetNumber(address.getStreetNumber());
-                addressEntity.setStreet(address.getStreet());
+                addressEntity.setDistrict(address.getDistrict());
                 addressEntity.setCity(address.getCity());
                 addressEntity.setCountry(address.getCountry());
                 addressEntity.setAddressType(address.getAddressType());
@@ -160,13 +155,11 @@ public class UserServiceImpl implements UserService {
 
         // Get user by id
         UserEntity user = getUserEntity(req.getId());
-        user.setFirstName(req.getFirstName());
-        user.setLastName(req.getLastName());
-        user.setGender(req.getGender());
-        user.setBirthday(req.getBirthday());
-        user.setEmail(req.getEmail());
-        user.setPhone(req.getPhone());
         user.setUsername(req.getUsername());
+        user.setBirthday(req.getBirthday());
+        user.setGender(req.getGender());
+        user.setPhone(req.getPhone());
+        user.setEmail(req.getEmail());
 
         userRepository.save(user);
         log.info("Updated user: {}", user);
@@ -179,11 +172,9 @@ public class UserServiceImpl implements UserService {
             if (addressEntity == null) {
                 addressEntity = new AddressEntity();
             }
-            addressEntity.setApartmentNumber(address.getApartmentNumber());
-            addressEntity.setFloor(address.getFloor());
-            addressEntity.setBuilding(address.getBuilding());
+            addressEntity.setHomeNumber(address.getHomeNumber());
             addressEntity.setStreetNumber(address.getStreetNumber());
-            addressEntity.setStreet(address.getStreet());
+            addressEntity.setDistrict(address.getDistrict());
             addressEntity.setCity(address.getCity());
             addressEntity.setCountry(address.getCountry());
             addressEntity.setAddressType(address.getAddressType());
@@ -246,11 +237,9 @@ public class UserServiceImpl implements UserService {
 
         List<UserResponse> userList = userEntities.stream().map(entity -> UserResponse.builder()
                 .id(entity.getId())
-                .firstName(entity.getFirstName())
-                .lastName(entity.getLastName())
-                .gender(entity.getGender())
-                .birthday(entity.getBirthday())
                 .username(entity.getUsername())
+                .birthday(entity.getBirthday())
+                .gender(entity.getGender())
                 .phone(entity.getPhone())
                 .email(entity.getEmail())
                 .build()

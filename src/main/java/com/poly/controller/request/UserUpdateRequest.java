@@ -20,17 +20,14 @@ public class UserUpdateRequest implements Serializable {
     @Min(value = 1, message = "userId must be equals or greater than 1")
     private Long id;
 
-    @NotBlank(message = "firstName must be not blank")
-    private String firstName;
-
-    @NotBlank(message = "firstName must be not blank")
-    private String lastName;
-    private Gender gender;
-    private Date birthday;
+    @NotBlank(message = "UserName must be not blank")
     private String username;
+    private Date birthday;
+    private Gender gender;
+    private String phone;
 
     @Email(message = "Email invalid")
     private String email;
-    private String phone;
+
     private List<AddressRequest> addresses;
 }

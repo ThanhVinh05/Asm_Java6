@@ -27,23 +27,20 @@ public class MockupUserController {
                                        @RequestParam(defaultValue = "20") int size) {
         UserResponse userResponse1 = new UserResponse();
         userResponse1.setId(1l);
-        userResponse1.setFirstName("Tay");
-        userResponse1.setLastName("Java");
-        userResponse1.setGender(Gender.MALE);
+        userResponse1.setUsername("ThanhVinh");
         userResponse1.setBirthday(new Date());
-        userResponse1.setUsername("admin");
-        userResponse1.setEmail("admin@gmail.com");
+        userResponse1.setGender(Gender.MALE);
         userResponse1.setPhone("0975118228");
+        userResponse1.setEmail("admin@gmail.com");
+
 
         UserResponse userResponse2 = new UserResponse();
         userResponse2.setId(2l);
-        userResponse2.setFirstName("Leo");
-        userResponse2.setLastName("Messi");
-        userResponse2.setGender(Gender.MALE);
-        userResponse2.setBirthday(new Date());
-        userResponse2.setUsername("user");
-        userResponse2.setEmail("user@gmail.com");
-        userResponse2.setPhone("0971234567");
+        userResponse1.setUsername("VanNam");
+        userResponse1.setBirthday(new Date());
+        userResponse1.setGender(Gender.MALE);
+        userResponse1.setPhone("0975118222");
+        userResponse1.setEmail("user@gmail.com");
 
         List<UserResponse> userList = List.of(userResponse1, userResponse2);
 
@@ -61,13 +58,11 @@ public class MockupUserController {
 
         UserResponse userDetail = new UserResponse();
         userDetail.setId(userId);
-        userDetail.setFirstName("Tay");
-        userDetail.setLastName("Java");
-        userDetail.setGender(Gender.MALE);
+        userDetail.setUsername("ThanhVinh");
         userDetail.setBirthday(new Date());
-        userDetail.setUsername("admin");
-        userDetail.setEmail("admin@gmail.com");
+        userDetail.setGender(Gender.MALE);
         userDetail.setPhone("0975118228");
+        userDetail.setEmail("admin@gmail.com");
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());

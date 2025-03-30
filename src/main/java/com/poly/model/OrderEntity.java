@@ -6,36 +6,26 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "tbl_address")
-public class AddressEntity {
+@Table(name = "tbl_order")
+public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "home_number")
-    private String homeNumber;
+    @Column(name = "status", length = 255)
+    private String status;
 
-    @Column(name = "street_number")
-    private String streetNumber;
-
-    @Column(name = "district")
-    private String district;
-
-    @Column(name = "city")
-    private String city;
-
-    @Column(name = "country")
-    private String country;
-
-    @Column(name = "address_type")
-    private Integer addressType;
+    @Column(name = "total_amount", precision = 10, scale = 2)
+    private BigDecimal totalAmount;
 
     @Column(name = "user_id")
     private Long userId;
