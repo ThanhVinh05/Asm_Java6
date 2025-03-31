@@ -33,7 +33,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductPageResponse findAll(String keyword, String sort, int page, int size) {
-        log.info("findAll start");
+        log.info("findAll start, page={}, size={}", page, size);
 
         Sort.Order order = new Sort.Order(Sort.Direction.ASC, "id");
         if (StringUtils.hasLength(sort)) {
@@ -62,8 +62,11 @@ public class ProductServiceImpl implements ProductService {
             keyword = "%" + keyword.toLowerCase() + "%";
             entityPage = productRepository.searchByKeyword(keyword, pageable);
         } else {
-            entityPage = productRepository.findAll(pageable);
+            entityPage = productRepository.findAllActive(pageable); //Sửa tại đây.
         }
+
+        log.info("Pageable: {}", pageable);
+        log.info("EntityPage: {}", entityPage);
 
         return getProductPageResponse(page, size, entityPage);
     }

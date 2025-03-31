@@ -34,7 +34,7 @@ public class ProductController {
                                        @RequestParam(required = false) String sort,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "20") int size) {
-        log.info("Get product list");
+        log.info("Get product list, page={}, size={}", page, size); //Thêm log tại đây.
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
