@@ -7,7 +7,7 @@ import com.poly.controller.response.ProductResponse;
 
 public interface ProductService {
 
-    ProductPageResponse findAll(String keyword, String sort, int page, int size);
+    ProductPageResponse findAll(String keyword, String sort, int page, int size, Long categoryId);
 
     ProductResponse findById(Long id);
 
@@ -16,4 +16,5 @@ public interface ProductService {
     void update(ProductUpdateRequest req);
 
     void delete(Long id);
+
 }

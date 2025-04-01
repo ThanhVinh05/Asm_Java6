@@ -32,8 +32,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
-    public ProductPageResponse findAll(String keyword, String sort, int page, int size) {
-        log.info("findAll start, page={}, size={}", page, size);
+    public ProductPageResponse findAll(String keyword, String sort, int page, int size, Long categoryId) {
+        log.info("findAll start, page={}, size={}, categoryId={}", page, size, categoryId);
 
         Sort.Order order = new Sort.Order(Sort.Direction.ASC, "id");
         if (StringUtils.hasLength(sort)) {
@@ -58,11 +58,13 @@ public class ProductServiceImpl implements ProductService {
 
         Page<ProductEntity> entityPage;
 
-        if (StringUtils.hasLength(keyword)) {
+        if (categoryId != null) {
+            entityPage = productRepository.findByCategoryId(categoryId, pageable);
+        } else if (StringUtils.hasLength(keyword)) {
             keyword = "%" + keyword.toLowerCase() + "%";
             entityPage = productRepository.searchByKeyword(keyword, pageable);
         } else {
-            entityPage = productRepository.findAllActive(pageable); //Sửa tại đây.
+            entityPage = productRepository.findAllActive(pageable);
         }
 
         log.info("Pageable: {}", pageable);

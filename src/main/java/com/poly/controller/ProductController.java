@@ -30,17 +30,18 @@ public class ProductController {
 
     @Operation(summary = "Get product list", description = "API retrieve product from database")
     @GetMapping("/list")
-    public Map<String, Object> getList(@RequestParam(required = false) String keyword,
-                                       @RequestParam(required = false) String sort,
-                                       @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "20") int size) {
-        log.info("Get product list, page={}, size={}", page, size); //Thêm log tại đây.
+    public Map<String, Object> getList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Long categoryId) { // Thêm categoryId
+        log.info("Get product list, page={}, size={}, categoryId={}", page, size, categoryId); // Thêm log
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "product list");
-        result.put("data", productService.findAll(keyword, sort, page, size));
-
+        result.put("data", productService.findAll(keyword, sort, page, size, categoryId)); // Truyền categoryId
         return result;
     }
 

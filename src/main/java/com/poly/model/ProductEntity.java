@@ -2,7 +2,6 @@ package com.poly.model;
 
 import com.poly.common.Status;
 import jakarta.persistence.*;
-import jdk.jfr.Category;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;

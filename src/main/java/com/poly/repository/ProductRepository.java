@@ -14,4 +14,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value = "select p from ProductEntity p where  p.status='ACTIVE' " +
             " and lower(p.productName) like :keyword")
     Page<ProductEntity> searchByKeyword(String keyword, Pageable pageable);
+
+    @Query(value = "SELECT p FROM ProductEntity p WHERE p.status = 'ACTIVE' AND p.categoryId = :categoryId")
+    Page<ProductEntity> findByCategoryId(Long categoryId, Pageable pageable);
 }
