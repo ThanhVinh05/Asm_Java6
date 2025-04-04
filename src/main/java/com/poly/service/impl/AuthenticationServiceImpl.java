@@ -16,13 +16,15 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import static com.poly.common.TokenType.REFRESH_TOKEN;
+import java.util.stream.Collectors;
 
+import static com.poly.common.TokenType.REFRESH_TOKEN;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +58,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (user == null) {
             throw new UsernameNotFoundException(request.getUsername());
         }
+
+        // Lấy thông tin vai trò của người dùng
+        String roles = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+        log.info("User roles: {}", roles);
 
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getUsername(), user.getAuthorities());
         String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getUsername(), user.getAuthorities());

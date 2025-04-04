@@ -64,6 +64,8 @@ public class UserEntity implements UserDetails, Serializable {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @Column(name = "secret_code", length = 255) // Thêm trường secretCode
+    private String secretCode;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -89,5 +91,4 @@ public class UserEntity implements UserDetails, Serializable {
     public boolean isEnabled() {
         return Status.ACTIVE.equals(status);
     }
-
 }

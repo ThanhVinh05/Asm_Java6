@@ -24,4 +24,6 @@ public interface UserService {
     void changePassword(UserPasswordRequest req);
 
     void delete(Long id);
+
+    void confirmEmail(String secretCode);
 }

@@ -15,6 +15,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,11 +24,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 import java.io.IOException;
 import java.util.Date;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Component
 @RequiredArgsConstructor
@@ -50,19 +51,27 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                 username = jwtService.extractUsername(token, TokenType.ACCESS_TOKEN);
                 log.info("username: {}", username);
             } catch (AccessDeniedException e) {
-                log.info(e.getMessage());
-                response.setStatus(HttpServletResponse.SC_OK);
+                log.error(e.getMessage());
+                response.setStatus(FORBIDDEN.value());
                 response.getWriter().write(errorResponse(e.getMessage()));
                 return;
             }
 
-            UserDetails user = serviceDetail.userDetailsService().loadUserByUsername(username);
+            UserDetails user = serviceDetail.loadUserByUsername(username);
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             context.setAuthentication(authToken);
             SecurityContextHolder.setContext(context);
+
+            // Lấy thông tin người dùng từ SecurityContext
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails authenticatedUser = (UserDetails) authentication.getPrincipal();
+                log.info("Authenticated user: {}", authenticatedUser.getUsername());
+                // Bạn có thể lấy các thông tin khác từ authenticatedUser, ví dụ như authorities (roles)
+            }
 
             filterChain.doFilter(request, response);
         } else {
@@ -79,14 +88,15 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
         try {
             ErrorResponse error = new ErrorResponse();
             error.setTimestamp(new Date());
-            error.setError("Forbidden");
-            error.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            error.setError(FORBIDDEN.name());
+            error.setStatus(FORBIDDEN.value());
             error.setMessage(message);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             return gson.toJson(error);
         } catch (Exception e) {
-            return ""; // Return an empty string if serialization fails
+            log.error("Error serializing error response", e);
+            return "{\"error\": \"Internal Server Error\", \"message\": \"Failed to generate error response\"}";
         }
     }
 

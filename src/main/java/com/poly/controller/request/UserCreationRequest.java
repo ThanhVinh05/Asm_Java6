@@ -24,6 +24,7 @@ public class UserCreationRequest implements Serializable {
 
     @Email(message = "Email invalid")
     private String email;
+    private String password;
     private UserType type;
     private List<AddressRequest> addresses; // home,office
 }

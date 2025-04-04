@@ -69,19 +69,13 @@ public class EmailService {
      * @param to
      * @param name
      */
-    public void sendVerificationEmail(String to, String name) throws IOException {
+    public void sendVerificationEmail(String to, String name, String secretCode) throws IOException {
         log.info("Sending verification email for name={}", name);
-
-        // Generate secret code and save to db
-        String secretCode = UUID.randomUUID().toString();
-        log.info("secretCode = {}", secretCode);
-
-        // TOD0 save secretCode to db
 
         // Tạo dynamic template data
         Map<String, String> params = new HashMap<>();
         params.put("name", name);
-        params.put("verification_link", verificationLink + "?secretCode=" + secretCode);
+        params.put("verification_link", verificationLink + "?secretCode=" + secretCode); // Include secretCode in verification link
 
         SendSmtpEmail sendSmtpEmail = new SendSmtpEmail();
         sendSmtpEmail.setSender(new SendSmtpEmailSender().email(fromEmail).name(fromName));

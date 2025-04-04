@@ -24,9 +24,9 @@ public class EmailController {
     }
 
     @PostMapping("/send-verification-email")
-    public void sendVerificationEmail(@RequestParam String to, @RequestParam String name) {
+    public void sendVerificationEmail(@RequestParam String to, @RequestParam String name, @RequestParam String secretCode) {
         try {
-            emailService.sendVerificationEmail(to, name);
+            emailService.sendVerificationEmail(to, name, secretCode); // Truyền đủ 3 tham số
             log.info("Verification email sent successfully!");
         } catch (Exception e) {
             log.error("Failed to send verification email.", e);

@@ -1,6 +1,7 @@
 package com.poly.service.impl;
 
 import com.poly.common.Status;
+import com.poly.common.UserType;
 import com.poly.controller.request.UserCreationRequest;
 import com.poly.controller.request.UserPasswordRequest;
 import com.poly.controller.request.UserUpdateRequest;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,9 +125,15 @@ public class UserServiceImpl implements UserService {
         user.setGender(req.getGender());
         user.setPhone(req.getPhone());
         user.setEmail(req.getEmail());
+        user.setPassword(passwordEncoder.encode(req.getPassword())); // Encode password
 
-        user.setType(req.getType());
-        user.setStatus(Status.ACTIVE);
+        user.setType(UserType.USER); // Set type to OWNER
+        user.setStatus(Status.NONE); // Set status to NONE
+
+        // Generate secret code and save to db
+        String secretCode = UUID.randomUUID().toString();
+        user.setSecretCode(secretCode);
+        log.info("secretCode = {}", secretCode);
 
         userRepository.save(user);
         log.info("Saved user: {}", user);
@@ -133,30 +141,24 @@ public class UserServiceImpl implements UserService {
         if (user.getId() != null) {
             log.info("user id: {}", user.getId());
             List<AddressEntity> addresses = new ArrayList<>();
-            req.getAddresses().forEach(address -> {
-                AddressEntity addressEntity = new AddressEntity();
-                addressEntity.setHomeNumber(address.getHomeNumber());
-                addressEntity.setStreetNumber(address.getStreetNumber());
-                addressEntity.setDistrict(address.getDistrict());
-                addressEntity.setCity(address.getCity());
-                addressEntity.setCountry(address.getCountry());
-                addressEntity.setAddressType(address.getAddressType());
-                addressEntity.setUserId(user.getId());
-                addresses.add(addressEntity);
-            });
+            AddressEntity addressEntity = new AddressEntity();
+            addressEntity.setUserId(user.getId());
+            addressEntity.setAddressType(1); // Set default address type
+            addresses.add(addressEntity);
             addressRepository.saveAll(addresses);
             log.info("Saved addresses: {}", addresses);
         }
 
         // Send email verification
         try {
-            emailService.sendVerificationEmail(req.getEmail(), req.getUsername());
+            emailService.sendVerificationEmail(req.getEmail(), req.getUsername(), secretCode); // Pass secretCode to email service
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         return user.getId();
     }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -263,5 +265,17 @@ public class UserServiceImpl implements UserService {
         response.setUsers(userList);
 
         return response;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmEmail(String secretCode) {
+        UserEntity user = userRepository.findBySecretCode(secretCode);
+        if (user == null) {
+            throw new ResourceNotFoundException("Invalid secret code");
+        }
+        user.setStatus(Status.ACTIVE);
+        userRepository.save(user);
+        log.info("User status updated to ACTIVE for user: {}", user.getUsername()); // Thêm log
     }
 }

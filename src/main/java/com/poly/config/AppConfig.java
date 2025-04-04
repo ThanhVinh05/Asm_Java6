@@ -1,15 +1,20 @@
 package com.poly.config;
 
 import com.google.gson.Gson;
+import com.poly.common.UserType;
 import com.poly.service.UserServiceDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.config.Customizer; // Thêm import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,7 +26,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -29,18 +34,39 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class AppConfig {
 
-    private final String[] whitelistedUrls = {"/auth/**"};
-
     private final CustomizeRequestFilter requestFilter;
     private final UserServiceDetail userServiceDetail;
 
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers(whitelistedUrls).permitAll()
-                        .anyRequest().authenticated())
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/auth/**", "/user/add", "/user/confirm-email", "/actuator/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger-resources/**", "/favicon.ico").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/product/**", "/category/**").permitAll()
+                        .requestMatchers("/product/**", "/category/**").hasAuthority(UserType.ADMIN.name())
+                        .requestMatchers("/user/list", "/user/{userId}").hasAnyAuthority(UserType.ADMIN.name(), UserType.USER.name())
+                        .requestMatchers("/user/upd", "/user/change-pwd").access(
+                                (authenticationSupplier, context) -> {
+                                    Authentication authentication = authenticationSupplier.get();
+                                    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                                    boolean hasAccess = context.getRequest().getRequestURI().contains("/user/" + username) ||
+                                            context.getRequest().getRequestURI().contains("/user/upd") ||
+                                            context.getRequest().getRequestURI().contains("/user/change-pwd");
+                                    return new AuthorizationDecision(hasAccess); // Trả về AuthorizationDecision
+                                }
+                        )
+                        .requestMatchers("/user/del/{userId}").hasAuthority(UserType.ADMIN.name())
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
-                .authenticationProvider(authenticationProvider()).addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -69,11 +95,11 @@ public class AppConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("**")
-                        .allowedOrigins("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE") // Các phương thức HTTP được phép
-                        .allowedHeaders("*") // Các header yêu cầu được phép
-                        .allowCredentials(false)
+                registry.addMapping("/**")
+                        .allowedOrigins(frontendUrl)
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
                         .maxAge(3600);
             }
         };

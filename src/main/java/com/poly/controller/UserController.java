@@ -14,12 +14,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -51,6 +55,17 @@ public class UserController {
     @GetMapping("/{userId}")
     public Map<String, Object> getUserDetail(@PathVariable @Min(value = 1, message = "userId must be equals or greater than 1") Long userId) {
         log.info("Get user detail by ID: {}", userId);
+
+        // Kiểm tra vai trò người dùng
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails authenticatedUser = (UserDetails) authentication.getPrincipal();
+            if (!authenticatedUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")) &&
+                    !authenticatedUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("OWNER")) &&
+                    !authenticatedUser.getUsername().equals(userService.findById(userId).getUsername())) {
+                throw new AccessDeniedException("You do not have permission to access this resource");
+            }
+        }
 
         UserResponse userDetail = userService.findById(userId);
 
@@ -126,11 +141,11 @@ public class UserController {
         log.info("Confirm email for account with secretCode: {}", secretCode);
 
         try {
-            // TODO check or compare secret code from db
+            userService.confirmEmail(secretCode); // Call service to confirm email
         } catch (Exception e) {
             log.error("Verification fail", e.getMessage(), e);
         } finally {
-            response.sendRedirect("https://ap.poly.edu.vn/");
+            response.sendRedirect("http://localhost:5173/login"); // Redirect to login page
         }
     }
 }

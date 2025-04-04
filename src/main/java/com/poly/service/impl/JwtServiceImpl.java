@@ -16,7 +16,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
-
 import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
@@ -26,7 +25,6 @@ import java.util.function.Function;
 
 import static com.poly.common.TokenType.ACCESS_TOKEN;
 import static com.poly.common.TokenType.REFRESH_TOKEN;
-
 
 @Service
 @Slf4j(topic = "JWT-SERVICE")
