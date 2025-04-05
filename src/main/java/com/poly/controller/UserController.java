@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,7 +62,6 @@ public class UserController {
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             UserDetails authenticatedUser = (UserDetails) authentication.getPrincipal();
             if (!authenticatedUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")) &&
-                    !authenticatedUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("OWNER")) &&
                     !authenticatedUser.getUsername().equals(userService.findById(userId).getUsername())) {
                 throw new AccessDeniedException("You do not have permission to access this resource");
             }
@@ -146,6 +146,44 @@ public class UserController {
             log.error("Verification fail", e.getMessage(), e);
         } finally {
             response.sendRedirect("http://localhost:5173/login"); // Redirect to login page
+        }
+    }
+    @GetMapping("/profile")  // Chỉ có GET mapping
+    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    public Map<String, Object> getCurrentUserProfile() {
+        log.info("Get current user profile - START");
+        try {
+            // Log thông tin authentication
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            log.info("Current authentication: {}", auth);
+            log.info("Is authenticated: {}", auth.isAuthenticated());
+            log.info("Principal: {}", auth.getPrincipal());
+            log.info("Authorities: {}", auth.getAuthorities());
+
+            UserResponse userDetail = userService.getCurrentUserDetail();
+            log.info("User detail response: {}", userDetail);
+
+            if (userDetail == null) {
+                Map<String, Object> errorResult = new LinkedHashMap<>();
+                errorResult.put("status", HttpStatus.NOT_FOUND.value());
+                errorResult.put("message", "User not found");
+                errorResult.put("data", null);
+                return errorResult;
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("status", HttpStatus.OK.value());
+            result.put("message", "User profile retrieved successfully");
+            result.put("data", userDetail);
+
+            return result;
+        } catch (Exception e) {
+            log.error("Error getting user profile", e);
+            Map<String, Object> errorResult = new LinkedHashMap<>();
+            errorResult.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errorResult.put("message", "Error retrieving user profile");
+            errorResult.put("error", e.getMessage());
+            return errorResult;
         }
     }
 }

@@ -13,6 +13,8 @@ public interface UserService {
 
     UserResponse findById(Long id);
 
+    UserResponse getCurrentUserDetail();
+
     UserResponse findByUsername(String username);
 
     UserResponse findByEmail(String email);

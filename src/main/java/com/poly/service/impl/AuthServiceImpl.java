@@ -37,11 +37,13 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getUsername(), authorities);
         String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getUsername(), authorities);
 
+        // Sử dụng phương thức accessToken() để thiết lập giá trị
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
+
     @Override
     public void logout(String authorizationHeader) {
         // Logic to invalidate or remove tokens (e.g., store blacklisted tokens)

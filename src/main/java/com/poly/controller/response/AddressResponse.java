@@ -1,18 +1,20 @@
-package com.poly.controller.request;
+package com.poly.controller.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
 @Getter
 @Setter
-public class AddressRequest implements Serializable {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AddressResponse implements Serializable {
     private String streetNumber;
     private String commune;
     private String district;
     private String city;
     private String country;
     private Integer addressType;
-
 }
+

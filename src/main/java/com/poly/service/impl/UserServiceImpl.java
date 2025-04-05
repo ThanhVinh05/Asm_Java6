@@ -5,6 +5,7 @@ import com.poly.common.UserType;
 import com.poly.controller.request.UserCreationRequest;
 import com.poly.controller.request.UserPasswordRequest;
 import com.poly.controller.request.UserUpdateRequest;
+import com.poly.controller.response.AddressResponse;
 import com.poly.controller.response.UserPageResponse;
 import com.poly.controller.response.UserResponse;
 import com.poly.exception.InvalidDataException;
@@ -21,6 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j(topic = "USER-SERVICE")
@@ -88,6 +93,18 @@ public class UserServiceImpl implements UserService {
         log.info("Find user by id: {}", id);
 
         UserEntity userEntity = getUserEntity(id);
+        List<AddressEntity> addressEntities = addressRepository.findByUserId(id);
+
+        List<AddressResponse> addressResponses = addressEntities.stream()
+                .map(entity -> AddressResponse.builder()
+                        .streetNumber(entity.getStreetNumber())
+                        .commune(entity.getCommune())
+                        .district(entity.getDistrict())
+                        .city(entity.getCity())
+                        .country(entity.getCountry())
+                        .addressType(entity.getAddressType())
+                        .build())
+                .collect(Collectors.toList());
 
         return UserResponse.builder()
                 .id(id)
@@ -96,7 +113,86 @@ public class UserServiceImpl implements UserService {
                 .gender(userEntity.getGender())
                 .phone(userEntity.getPhone())
                 .email(userEntity.getEmail())
+                .addresses(addressResponses)
                 .build();
+    }
+
+    private UserEntity getUserEntityFromUserDetails(UserDetails userDetails) {
+        log.info("Getting UserEntity from UserDetails: {}", userDetails.getUsername());
+        try {
+            UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername());
+            if (userEntity == null) {
+                log.error("No user found with username: {}", userDetails.getUsername());
+                return null;
+            }
+            log.info("Found user entity: {}", userEntity);
+            return userEntity;
+        } catch (Exception e) {
+            log.error("Error getting user entity from UserDetails", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public UserResponse getCurrentUserDetail() {
+        log.info("Getting current user detail - START");
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            log.info("Authentication object: {}", authentication);
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.error("No authenticated user found");
+                return null;
+            }
+
+            Object principal = authentication.getPrincipal();
+            log.info("Principal type: {}", principal.getClass().getName());
+
+            UserEntity userEntity;
+            if (principal instanceof UserEntity) {
+                userEntity = (UserEntity) principal;
+            } else if (principal instanceof UserDetails) {
+                userEntity = getUserEntityFromUserDetails((UserDetails) principal);
+            } else {
+                log.error("Unsupported principal type");
+                return null;
+            }
+
+            if (userEntity == null) {
+                return null;
+            }
+
+            // Lấy địa chỉ của user
+            List<AddressEntity> addressEntities = addressRepository.findByUserId(userEntity.getId());
+            log.info("Found {} addresses for user", addressEntities.size());
+
+            List<AddressResponse> addressResponses = addressEntities.stream()
+                    .map(entity -> AddressResponse.builder()
+                            .streetNumber(entity.getStreetNumber())
+                            .commune(entity.getCommune())
+                            .district(entity.getDistrict())
+                            .city(entity.getCity())
+                            .country(entity.getCountry())
+                            .addressType(entity.getAddressType())
+                            .build())
+                    .collect(Collectors.toList());
+
+            UserResponse response = UserResponse.builder()
+                    .id(userEntity.getId())
+                    .username(userEntity.getUsername())
+                    .birthday(userEntity.getBirthday())
+                    .gender(userEntity.getGender())
+                    .phone(userEntity.getPhone())
+                    .email(userEntity.getEmail())
+                    .addresses(addressResponses)
+                    .build();
+
+            log.info("Returning user response: {}", response);
+            return response;
+        } catch (Exception e) {
+            log.error("Error in getCurrentUserDetail", e);
+            throw e;
+        }
     }
 
     @Override
@@ -184,8 +280,8 @@ public class UserServiceImpl implements UserService {
             if (addressEntity == null) {
                 addressEntity = new AddressEntity();
             }
-            addressEntity.setHomeNumber(address.getHomeNumber());
             addressEntity.setStreetNumber(address.getStreetNumber());
+            addressEntity.setCommune(address.getCommune());
             addressEntity.setDistrict(address.getDistrict());
             addressEntity.setCity(address.getCity());
             addressEntity.setCountry(address.getCountry());

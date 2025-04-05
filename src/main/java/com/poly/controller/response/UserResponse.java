@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,5 +19,5 @@ public class UserResponse implements Serializable {
     private Gender gender;
     private String phone;
     private String email;
-    // more
+    private List<AddressResponse> addresses;
 }

@@ -19,8 +19,8 @@ public class AddressEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "home_number")
-    private String homeNumber;
+    @Column(name = "Commune")
+    private String commune;
 
     @Column(name = "street_number")
     private String streetNumber;

@@ -46,20 +46,14 @@ public class AppConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/**", "/user/add", "/user/confirm-email", "/actuator/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger-resources/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/auth/**", "/user/add", "/user/confirm-email", "/actuator/**",
+                                "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
+                                "/webjars/**", "/swagger-resources/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.GET, "/product/**", "/category/**").permitAll()
+                        // Gộp các endpoint liên quan đến user profile
+                        .requestMatchers("/user/profile", "/user/upd", "/user/change-pwd").authenticated() // Cho phép user đã đăng nhập truy cập
                         .requestMatchers("/product/**", "/category/**").hasAuthority(UserType.ADMIN.name())
-                        .requestMatchers("/user/list", "/user/{userId}").hasAnyAuthority(UserType.ADMIN.name(), UserType.USER.name())
-                        .requestMatchers("/user/upd", "/user/change-pwd").access(
-                                (authenticationSupplier, context) -> {
-                                    Authentication authentication = authenticationSupplier.get();
-                                    String username = SecurityContextHolder.getContext().getAuthentication().getName();
-                                    boolean hasAccess = context.getRequest().getRequestURI().contains("/user/" + username) ||
-                                            context.getRequest().getRequestURI().contains("/user/upd") ||
-                                            context.getRequest().getRequestURI().contains("/user/change-pwd");
-                                    return new AuthorizationDecision(hasAccess); // Trả về AuthorizationDecision
-                                }
-                        )
+                        .requestMatchers("/user/list", "/user/{userId}").hasAuthority(UserType.ADMIN.name())
                         .requestMatchers("/user/del/{userId}").hasAuthority(UserType.ADMIN.name())
                         .anyRequest().authenticated()
                 )

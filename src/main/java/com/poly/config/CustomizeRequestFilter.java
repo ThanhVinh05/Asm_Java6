@@ -72,7 +72,6 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                 log.info("Authenticated user: {}", authenticatedUser.getUsername());
                 // Bạn có thể lấy các thông tin khác từ authenticatedUser, ví dụ như authorities (roles)
             }
-
             filterChain.doFilter(request, response);
         } else {
             filterChain.doFilter(request, response);
