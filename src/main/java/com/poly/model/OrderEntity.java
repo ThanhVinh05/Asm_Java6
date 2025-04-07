@@ -1,5 +1,6 @@
 package com.poly.model;
 
+import com.poly.common.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -21,8 +21,9 @@ public class OrderEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "status", length = 255)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private OrderStatus status;
 
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
@@ -30,16 +31,40 @@ public class OrderEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "province")
+    private String province;
+
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "ward")
+    private String ward;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "note")
+    private String note;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     private UserEntity user;
 
-    @Column(name = "created_at", length = 255)
+    @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date createdAt;
 
-    @Column(name = "updated_at", length = 255)
+    @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     private Date updatedAt;

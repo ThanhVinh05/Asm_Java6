@@ -51,10 +51,17 @@ public class AppConfig {
                                 "/webjars/**", "/swagger-resources/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.GET, "/product/**", "/category/**").permitAll()
                         // Gộp các endpoint liên quan đến user profile
-                        .requestMatchers("/user/profile", "/user/upd", "/user/change-pwd").authenticated() // Cho phép user đã đăng nhập truy cập
+                        .requestMatchers("/user/profile", "/user/upd", "/user/change-pwd").authenticated()
+                        // Thêm quyền truy cập cho giỏ hàng
+                        .requestMatchers("/cart/**").authenticated()
+                        // Thêm quyền truy cập cho đơn hàng
+                        .requestMatchers("/order/**").authenticated()
+                        // Các endpoint quản lý cho ADMIN
                         .requestMatchers("/product/**", "/category/**").hasAuthority(UserType.ADMIN.name())
                         .requestMatchers("/user/list", "/user/{userId}").hasAuthority(UserType.ADMIN.name())
                         .requestMatchers("/user/del/{userId}").hasAuthority(UserType.ADMIN.name())
+                        // Các endpoint quản lý đơn hàng cho ADMIN
+                        .requestMatchers("/admin/orders/**").hasAuthority(UserType.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))

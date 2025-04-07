@@ -39,9 +39,9 @@ public class UserController {
     @Operation(summary = "Get user list", description = "API retrieve user from database")
     @GetMapping("/list")
     public Map<String, Object> getList(@RequestParam(required = false) String keyword,
-                                       @RequestParam(required = false) String sort,
-                                       @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         log.info("Get user list");
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -54,7 +54,8 @@ public class UserController {
 
     @Operation(summary = "Get user detail", description = "API retrieve user detail by ID from database")
     @GetMapping("/{userId}")
-    public Map<String, Object> getUserDetail(@PathVariable @Min(value = 1, message = "userId must be equals or greater than 1") Long userId) {
+    public Map<String, Object> getUserDetail(
+            @PathVariable @Min(value = 1, message = "userId must be equals or greater than 1") Long userId) {
         log.info("Get user detail by ID: {}", userId);
 
         // Kiểm tra vai trò người dùng
@@ -122,7 +123,8 @@ public class UserController {
 
     @Operation(summary = "Delete user", description = "API activate user from database")
     @DeleteMapping("/del/{userId}")
-    public Map<String, Object> deleteUser(@PathVariable @Min(value = 1, message = "userId must be equals or greater than 1") Long userId) {
+    public Map<String, Object> deleteUser(
+            @PathVariable @Min(value = 1, message = "userId must be equals or greater than 1") Long userId) {
         log.info("Deleting user: {}", userId);
 
         userService.delete(userId);
@@ -148,7 +150,8 @@ public class UserController {
             response.sendRedirect("http://localhost:5173/login"); // Redirect to login page
         }
     }
-    @GetMapping("/profile")  // Chỉ có GET mapping
+
+    @GetMapping("/profile") // Chỉ có GET mapping
     @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
     public Map<String, Object> getCurrentUserProfile() {
         log.info("Get current user profile - START");

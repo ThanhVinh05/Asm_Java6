@@ -12,4 +12,5 @@ public interface JwtService {
     String generateRefreshToken(long userId, String username, Collection<? extends GrantedAuthority> authorities);
 
     String extractUsername(String token, TokenType type);
+
 }
