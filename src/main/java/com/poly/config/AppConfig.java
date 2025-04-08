@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.security.config.Customizer; // Thêm import
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -46,22 +46,44 @@ public class AppConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/**", "/user/add", "/user/confirm-email", "/actuator/**",
-                                "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
-                                "/webjars/**", "/swagger-resources/**", "/favicon.ico").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/product/**", "/category/**").permitAll()
-                        // Gộp các endpoint liên quan đến user profile
+                        // Public endpoints
+                        .requestMatchers(
+                                "/auth/**",
+                                "/user/add",
+                                "/user/confirm-email",
+                                "/actuator/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/webjars/**",
+                                "/swagger-resources/**",
+                                "/favicon.ico"
+                        ).permitAll()
+
+                        // Product endpoints
+                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers("/product/**").hasAuthority(UserType.ADMIN.name())
+
+                        // Category endpoints
+                        .requestMatchers(HttpMethod.GET, "/category/**").permitAll()
+                        .requestMatchers("/category/**").hasAuthority(UserType.ADMIN.name())
+
+                        // User endpoints
                         .requestMatchers("/user/profile", "/user/upd", "/user/change-pwd").authenticated()
-                        // Thêm quyền truy cập cho giỏ hàng
-                        .requestMatchers("/cart/**").authenticated()
-                        // Thêm quyền truy cập cho đơn hàng
-                        .requestMatchers("/order/**").authenticated()
-                        // Các endpoint quản lý cho ADMIN
-                        .requestMatchers("/product/**", "/category/**").hasAuthority(UserType.ADMIN.name())
                         .requestMatchers("/user/list", "/user/{userId}").hasAuthority(UserType.ADMIN.name())
                         .requestMatchers("/user/del/{userId}").hasAuthority(UserType.ADMIN.name())
-                        // Các endpoint quản lý đơn hàng cho ADMIN
+
+                        // Address endpoints
+                        .requestMatchers("/address/**").authenticated()
+
+                        // Cart endpoints
+                        .requestMatchers("/cart/**").authenticated()
+
+                        // Order endpoints
+                        .requestMatchers("/order/**").authenticated()
                         .requestMatchers("/admin/orders/**").hasAuthority(UserType.ADMIN.name())
+
+                        // Any other request requires authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
@@ -75,7 +97,14 @@ public class AppConfig {
     public WebSecurityCustomizer ignoreResources() {
         return webSecurity -> webSecurity
                 .ignoring()
-                .requestMatchers("/actuator/**", "/v3/**", "/webjars/**", "/swagger-ui*/*swagger-initializer.js", "/swagger-ui*/**", "/favicon.ico");
+                .requestMatchers(
+                        "/actuator/**",
+                        "/v3/**",
+                        "/webjars/**",
+                        "/swagger-ui*/*swagger-initializer.js",
+                        "/swagger-ui*/**",
+                        "/favicon.ico"
+                );
     }
 
     @Bean
@@ -97,9 +126,10 @@ public class AppConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(frontendUrl)
+                        .allowedOrigins(frontendUrl, "http://localhost:5173")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
+                        .exposedHeaders("Authorization")
                         .allowCredentials(true)
                         .maxAge(3600);
             }

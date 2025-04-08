@@ -32,14 +32,8 @@ public class OrderServiceImpl implements OrderService {
         // Create order
         OrderEntity order = new OrderEntity();
         order.setUserId(userId);
-        order.setStatus(OrderStatus.PENDING); // Sử dụng enum trực tiếp
+        order.setStatus(OrderStatus.PENDING);
         order.setTotalAmount(request.getTotalAmount());
-        order.setFullName(request.getFullName());
-        order.setPhone(request.getPhone());
-        order.setProvince(request.getProvince());
-        order.setDistrict(request.getDistrict());
-        order.setWard(request.getWard());
-        order.setAddress(request.getAddress());
         order.setNote(request.getNote());
         order.setPaymentMethod(request.getPaymentMethod());
 
@@ -58,9 +52,6 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
 
         orderDetailRepository.saveAll(orderDetails);
-
-        // Clear cart
-        cartService.clearCart(userId);
 
         return order.getId();
     }
@@ -97,6 +88,7 @@ public class OrderServiceImpl implements OrderService {
                 .id(order.getId())
                 .status(order.getStatus()) // Không cần chuyển đổi nữa
                 .totalAmount(order.getTotalAmount())
+                .paymentMethod(order.getPaymentMethod())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();

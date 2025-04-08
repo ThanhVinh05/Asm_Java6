@@ -3,6 +3,7 @@ package com.poly.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.poly.common.TokenType;
+import com.poly.exception.TokenValidationException;
 import com.poly.service.JwtService;
 import com.poly.service.UserServiceDetail;
 import jakarta.servlet.FilterChain;
@@ -23,12 +24,14 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.IOException;
 import java.util.Date;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Component
 @RequiredArgsConstructor
@@ -42,39 +45,41 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("{} {}", request.getMethod(), request.getRequestURI());
 
-        final String authHeader = request.getHeader(AUTHORIZATION);
-        if (StringUtils.hasLength(authHeader) && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            log.info("token: {}...", token.substring(0, 20));
-            String username = "";
-            try {
-                username = jwtService.extractUsername(token, TokenType.ACCESS_TOKEN);
+        try {
+            final String authHeader = request.getHeader(AUTHORIZATION);
+            if (StringUtils.hasLength(authHeader) && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                log.info("token: {}...", token.substring(0, Math.min(token.length(), 20)));
+
+                String username = jwtService.extractUsername(token, TokenType.ACCESS_TOKEN);
                 log.info("username: {}", username);
-            } catch (AccessDeniedException e) {
-                log.error(e.getMessage());
-                response.setStatus(FORBIDDEN.value());
-                response.getWriter().write(errorResponse(e.getMessage()));
-                return;
-            }
 
-            UserDetails user = serviceDetail.loadUserByUsername(username);
+                UserDetails user = serviceDetail.loadUserByUsername(username);
 
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            context.setAuthentication(authToken);
-            SecurityContextHolder.setContext(context);
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        user, null, user.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                context.setAuthentication(authToken);
+                SecurityContextHolder.setContext(context);
 
-            // Lấy thông tin người dùng từ SecurityContext
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-                UserDetails authenticatedUser = (UserDetails) authentication.getPrincipal();
-                log.info("Authenticated user: {}", authenticatedUser.getUsername());
-                // Bạn có thể lấy các thông tin khác từ authenticatedUser, ví dụ như authorities (roles)
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                    UserDetails authenticatedUser = (UserDetails) authentication.getPrincipal();
+                    log.info("Authenticated user: {}", authenticatedUser.getUsername());
+                }
             }
             filterChain.doFilter(request, response);
-        } else {
-            filterChain.doFilter(request, response);
+        } catch (AccessDeniedException | TokenValidationException e) {
+            log.error("Authentication error: {}", e.getMessage());
+            response.setStatus(FORBIDDEN.value());
+            response.setContentType(APPLICATION_JSON_VALUE);
+            response.getWriter().write(errorResponse(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Unexpected error in filter: {}", e.getMessage());
+            response.setStatus(INTERNAL_SERVER_ERROR.value());
+            response.setContentType(APPLICATION_JSON_VALUE);
+            response.getWriter().write(errorResponse("Internal server error: " + e.getMessage()));
         }
     }
 

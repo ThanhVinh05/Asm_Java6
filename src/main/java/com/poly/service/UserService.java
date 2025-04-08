@@ -28,4 +28,5 @@ public interface UserService {
     void delete(Long id);
 
     void confirmEmail(String secretCode);
+
 }

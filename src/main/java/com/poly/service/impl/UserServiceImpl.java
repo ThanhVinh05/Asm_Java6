@@ -2,6 +2,7 @@ package com.poly.service.impl;
 
 import com.poly.common.Status;
 import com.poly.common.UserType;
+import com.poly.config.CustomUserDetails;
 import com.poly.controller.request.UserCreationRequest;
 import com.poly.controller.request.UserPasswordRequest;
 import com.poly.controller.request.UserUpdateRequest;
@@ -142,40 +143,63 @@ public class UserServiceImpl implements UserService {
 
             if (authentication == null || !authentication.isAuthenticated()) {
                 log.error("No authenticated user found");
-                return null;
+                throw new InvalidDataException("Người dùng chưa đăng nhập");
             }
 
             Object principal = authentication.getPrincipal();
             log.info("Principal type: {}", principal.getClass().getName());
 
             UserEntity userEntity;
-            if (principal instanceof UserEntity) {
-                userEntity = (UserEntity) principal;
-            } else if (principal instanceof UserDetails) {
-                userEntity = getUserEntityFromUserDetails((UserDetails) principal);
+            if (principal instanceof CustomUserDetails customUserDetails) {
+                userEntity = customUserDetails.getUser();
             } else {
                 log.error("Unsupported principal type");
-                return null;
-            }
-
-            if (userEntity == null) {
-                return null;
+                throw new InvalidDataException("Không thể lấy thông tin người dùng");
             }
 
             // Lấy địa chỉ của user
             List<AddressEntity> addressEntities = addressRepository.findByUserId(userEntity.getId());
             log.info("Found {} addresses for user", addressEntities.size());
 
+            // Kiểm tra chi tiết về địa chỉ để debug
+            if (addressEntities.isEmpty()) {
+                log.warn("No addresses found for user ID: {}, creating default empty address", userEntity.getId());
+                // Tạo địa chỉ mặc định trống để tránh null
+                AddressEntity defaultEmptyAddress = new AddressEntity();
+                defaultEmptyAddress.setUserId(userEntity.getId());
+                defaultEmptyAddress.setAddressType(1);
+                addressEntities.add(defaultEmptyAddress);
+            } else {
+                // Log chi tiết về địa chỉ đầu tiên để debug
+                AddressEntity firstAddress = addressEntities.get(0);
+                log.info(
+                        "First address details: streetNumber={}, commune={}, district={}, city={}, country={}, type={}",
+                        firstAddress.getStreetNumber(),
+                        firstAddress.getCommune(),
+                        firstAddress.getDistrict(),
+                        firstAddress.getCity(),
+                        firstAddress.getCountry(),
+                        firstAddress.getAddressType());
+            }
+
             List<AddressResponse> addressResponses = addressEntities.stream()
-                    .map(entity -> AddressResponse.builder()
-                            .streetNumber(entity.getStreetNumber())
-                            .commune(entity.getCommune())
-                            .district(entity.getDistrict())
-                            .city(entity.getCity())
-                            .country(entity.getCountry())
-                            .addressType(entity.getAddressType())
-                            .build())
+                    .map(entity -> {
+                        // Đảm bảo không có giá trị null
+                        return AddressResponse.builder()
+                                .streetNumber(entity.getStreetNumber() != null ? entity.getStreetNumber() : "")
+                                .commune(entity.getCommune() != null ? entity.getCommune() : "")
+                                .district(entity.getDistrict() != null ? entity.getDistrict() : "")
+                                .city(entity.getCity() != null ? entity.getCity() : "")
+                                .country(entity.getCountry() != null ? entity.getCountry() : "Việt Nam")
+                                .addressType(entity.getAddressType() != null ? entity.getAddressType() : 1)
+                                .build();
+                    })
                     .collect(Collectors.toList());
+
+            // Log thông tin địa chỉ đã chuyển đổi
+            if (!addressResponses.isEmpty()) {
+                log.info("Converted first address: {}", addressResponses.get(0));
+            }
 
             UserResponse response = UserResponse.builder()
                     .id(userEntity.getId())
@@ -187,7 +211,7 @@ public class UserServiceImpl implements UserService {
                     .addresses(addressResponses)
                     .build();
 
-            log.info("Returning user response: {}", response);
+            log.info("Returning user response with {} addresses", addressResponses.size());
             return response;
         } catch (Exception e) {
             log.error("Error in getCurrentUserDetail", e);
@@ -374,4 +398,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         log.info("User status updated to ACTIVE for user: {}", user.getUsername()); // Thêm log
     }
+
+
 }

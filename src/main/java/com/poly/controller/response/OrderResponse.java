@@ -13,8 +13,9 @@ import java.util.Date;
 @Builder
 public class OrderResponse {
     private Long id;
-    private OrderStatus status; // Sử dụng OrderStatus thay vì String
+    private OrderStatus status;
     private BigDecimal totalAmount;
+    private String paymentMethod; // Thêm trường này
     private Date createdAt;
     private Date updatedAt;
 }

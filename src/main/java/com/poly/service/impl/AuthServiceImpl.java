@@ -1,5 +1,6 @@
 package com.poly.service.impl;
 
+import com.poly.config.CustomUserDetails;
 import com.poly.controller.request.SignInRequest;
 import com.poly.controller.response.TokenResponse;
 import com.poly.model.UserEntity;
@@ -31,13 +32,17 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        UserEntity user = (UserEntity) authentication.getPrincipal();
+        // Thay đổi cách lấy thông tin user
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        UserEntity user = customUserDetails.getUser();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+
+        log.info("User authenticated successfully: {}", user.getUsername());
+        log.info("User ID: {}", user.getId());
 
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getUsername(), authorities);
         String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getUsername(), authorities);
 
-        // Sử dụng phương thức accessToken() để thiết lập giá trị
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -46,8 +51,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String authorizationHeader) {
-        // Logic to invalidate or remove tokens (e.g., store blacklisted tokens)
-        // For simplicity, we'll just log the logout
         log.info("Token invalidated: {}", authorizationHeader);
     }
 }

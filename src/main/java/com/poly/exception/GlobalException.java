@@ -256,6 +256,35 @@ public class GlobalException {
         return errorResponse;
     }
 
+    @ExceptionHandler(TokenValidationException.class)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "401", description = "Token Invalid",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "Token Validation Error",
+                                    summary = "Handle token validation errors",
+                                    value = """
+                                        {
+                                          "timestamp": "2024-03-19T06:07:35.321+00:00",
+                                          "status": 401,
+                                          "path": "/api/v1/cart/...",
+                                          "error": "Token Invalid",
+                                          "message": "Token không hợp lệ hoặc đã hết hạn"
+                                        }
+                                        """
+                            ))})
+    })
+    public ErrorResponse handleTokenValidationException(TokenValidationException e, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(UNAUTHORIZED.value());
+        errorResponse.setError("Token Invalid");
+        errorResponse.setMessage(e.getMessage());
+
+        return errorResponse;
+    }
+
     @Getter
     @Setter
     private class ErrorResponse {

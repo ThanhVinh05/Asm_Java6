@@ -31,24 +31,6 @@ public class OrderEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "full_name")
-    private String fullName;
-
-    @Column(name = "phone")
-    private String phone;
-
-    @Column(name = "province")
-    private String province;
-
-    @Column(name = "district")
-    private String district;
-
-    @Column(name = "ward")
-    private String ward;
-
-    @Column(name = "address")
-    private String address;
-
     @Column(name = "note")
     private String note;
 

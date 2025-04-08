@@ -189,4 +189,26 @@ public class UserController {
             return errorResult;
         }
     }
+    @GetMapping("/current")
+    @PreAuthorize("hasAnyAuthority('USER')")
+    public Map<String, Object> getCurrentUser() {
+        log.info("Get current user - START");
+        try {
+            UserResponse userDetail = userService.getCurrentUserDetail();
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("status", HttpStatus.OK.value());
+            result.put("message", "User retrieved successfully");
+            result.put("data", userDetail);
+
+            return result;
+        } catch (Exception e) {
+            log.error("Error getting current user", e);
+            Map<String, Object> errorResult = new LinkedHashMap<>();
+            errorResult.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errorResult.put("message", "Error retrieving user");
+            errorResult.put("error", e.getMessage());
+            return errorResult;
+        }
+    }
 }

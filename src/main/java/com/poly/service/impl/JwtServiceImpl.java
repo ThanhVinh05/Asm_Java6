@@ -118,4 +118,25 @@ public class JwtServiceImpl implements JwtService {
             throw new AccessDeniedException("Access denied: " + e.getMessage());
         }
     }
+
+    @Override
+    public Long extractUserId(String token) {
+        log.info("----------[ extractUserId ]----------");
+        try {
+            Claims claims = extraAllClaim(token, TokenType.ACCESS_TOKEN);
+            Object userIdObj = claims.get("userId");
+            if (userIdObj == null) {
+                log.error("Token does not contain userId");
+                throw new AccessDeniedException("Token không hợp lệ: không tìm thấy userId");
+            }
+            return Long.valueOf(userIdObj.toString());
+        } catch (NumberFormatException e) {
+            log.error("Error converting userId: {}", e.getMessage());
+            throw new AccessDeniedException("Token không hợp lệ: userId không đúng định dạng");
+        } catch (Exception e) {
+            log.error("Error extracting userId from token: {}", e.getMessage());
+            throw new AccessDeniedException("Token không hợp lệ hoặc đã hết hạn");
+        }
+    }
+
 }
