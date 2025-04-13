@@ -1,5 +1,6 @@
 package com.poly.repository;
 
+import com.poly.common.OrderStatus;
 import com.poly.model.OrderEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -7,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,4 +39,19 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     // Query để lấy các đơn hàng trong khoảng thời gian
     @Query("SELECT o FROM OrderEntity o WHERE o.createdAt BETWEEN :startDate AND :endDate")
     List<OrderEntity> findOrdersBetweenDates(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    @Query("SELECT o FROM OrderEntity o " +
+            "WHERE (:keyword IS NULL OR LOWER(CAST(o.id AS string)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(o.note) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(o.paymentMethod) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:orderId IS NULL OR o.id = :orderId) " +
+            "AND (:status IS NULL OR o.status = :status) " +
+            "AND (:createdAt IS NULL OR DATE(o.createdAt) = DATE(:createdAt)) " +
+            "AND (:totalAmount IS NULL OR o.totalAmount = :totalAmount)")
+    Page<OrderEntity> findAllOrders(
+            @Param("keyword") String keyword,
+            @Param("orderId") Long orderId,
+            @Param("status") OrderStatus status,
+            @Param("createdAt") Date createdAt,
+            @Param("totalAmount") BigDecimal totalAmount,
+            Pageable pageable
+    );
 }

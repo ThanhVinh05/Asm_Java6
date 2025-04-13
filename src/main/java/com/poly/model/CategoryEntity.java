@@ -1,5 +1,6 @@
 package com.poly.model;
 
+import com.poly.common.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,10 @@ public class CategoryEntity {
 
     @Column(name = "category_name",unique = true, nullable = false, length = 255)
     private String categoryName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 255)
+    private Status status;
 
     @Column(name = "created_at", length = 255)
     @Temporal(TemporalType.TIMESTAMP)

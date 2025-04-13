@@ -85,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
                 .image(productEntity.getImage())
                 .description(productEntity.getDescription())
                 .productPrice(productEntity.getProductPrice())
+                .stockQuantity(productEntity.getStockQuantity())
                 .categoryId(productEntity.getCategoryId())
                 .build();
     }
@@ -133,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
 
         ProductEntity product = getProductEntity(id);
         product.setStatus(Status.INACTIVE);
+
         productRepository.save(product);
         log.info("Deleted product id: {}", id);
     }
@@ -150,6 +152,7 @@ public class ProductServiceImpl implements ProductService {
                 .image(entity.getImage())
                 .description(entity.getDescription())
                 .productPrice(entity.getProductPrice())
+                .stockQuantity(entity.getStockQuantity())
                 .categoryId(entity.getCategoryId())
                 .build()).collect(Collectors.toList());
 

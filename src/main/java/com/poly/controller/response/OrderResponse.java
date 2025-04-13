@@ -1,6 +1,7 @@
 package com.poly.controller.response;
 
 import com.poly.common.OrderStatus;
+import com.poly.model.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,4 +19,5 @@ public class OrderResponse {
     private String paymentMethod; // Thêm trường này
     private Date createdAt;
     private Date updatedAt;
+    private UserEntity user;
 }

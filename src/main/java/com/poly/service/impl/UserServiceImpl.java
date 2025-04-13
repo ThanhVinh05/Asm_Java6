@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
             keyword = "%" + keyword.toLowerCase() + "%";
             entityPage = userRepository.searchByKeyword(keyword, pageable);
         } else {
-            entityPage = userRepository.findAll(pageable);
+            entityPage = userRepository.findAllActive(pageable);
         }
 
         return getUserPageResponse(page, size, entityPage);
@@ -114,6 +114,9 @@ public class UserServiceImpl implements UserService {
                 .gender(userEntity.getGender())
                 .phone(userEntity.getPhone())
                 .email(userEntity.getEmail())
+                .type(userEntity.getType())
+                .status(userEntity.getStatus())
+                .createdAt(userEntity.getCreatedAt())
                 .addresses(addressResponses)
                 .build();
     }
@@ -374,6 +377,8 @@ public class UserServiceImpl implements UserService {
                 .gender(entity.getGender())
                 .phone(entity.getPhone())
                 .email(entity.getEmail())
+                .type(entity.getType())
+                .status(entity.getStatus())
                 .build()
         ).toList();
 

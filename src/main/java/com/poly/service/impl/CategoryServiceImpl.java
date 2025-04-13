@@ -1,5 +1,6 @@
 package com.poly.service.impl;
 
+import com.poly.common.Status;
 import com.poly.controller.request.CategoryCreationRequest;
 import com.poly.controller.request.CategoryUpdateRequest;
 import com.poly.controller.response.CategoryResponse;
@@ -26,7 +27,8 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> findAll() { // Thay đổi kiểu trả về
         log.info("findAll categories (no pagination)");
 
-        List<CategoryEntity> categoryEntities = categoryRepository.findAll();
+
+        List<CategoryEntity> categoryEntities = categoryRepository.findAllActive();
 
         return categoryEntities.stream()
                 .map(entity -> CategoryResponse.builder()
@@ -50,8 +52,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(rollbackFor = Exception.class)
     public long save(CategoryCreationRequest req) {
         log.info("Saving category: {}", req);
+
         CategoryEntity category = new CategoryEntity();
         category.setCategoryName(req.getCategoryName());
+        category.setStatus(Status.ACTIVE);
+
         categoryRepository.save(category);
         log.info("Saved category: {}", category);
         return category.getId();
@@ -61,8 +66,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(rollbackFor = Exception.class)
     public void update(CategoryUpdateRequest req) {
         log.info("Updating category: {}", req);
+
         CategoryEntity category = getCategoryEntity(req.getId());
         category.setCategoryName(req.getCategoryName());
+
         categoryRepository.save(category);
         log.info("Updated category: {}", category);
     }
@@ -70,8 +77,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(Long id) {
         log.info("Deleting category: {}", id);
+
         CategoryEntity category = getCategoryEntity(id);
-        categoryRepository.delete(category);
+        category.setStatus(Status.INACTIVE);
+
+        categoryRepository.save(category);
         log.info("Deleted category id: {}", id);
     }
 

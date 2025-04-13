@@ -16,6 +16,7 @@ public class ProductResponse implements Serializable {
     private String image;
     private String description;
     private BigDecimal productPrice;
+    private Integer stockQuantity;
     private Long categoryId;
     // more
 }

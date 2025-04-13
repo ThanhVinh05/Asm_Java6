@@ -1,5 +1,6 @@
 package com.poly.controller;
 
+import com.poly.controller.request.GoogleAuthRequest;
 import com.poly.controller.request.SignInRequest;
 import com.poly.controller.response.TokenResponse;
 import com.poly.service.AuthService;
@@ -27,5 +28,11 @@ public class AuthController {
         log.info("Logout request");
         authService.logout(authorizationHeader);
         return ResponseEntity.ok("Logout successful");
+    }
+    @PostMapping("/google")
+    public ResponseEntity<TokenResponse> googleLogin(@RequestBody GoogleAuthRequest request) {
+        log.info("Google login request");
+        TokenResponse tokenResponse = authService.loginWithGoogle(request.getToken());
+        return ResponseEntity.ok(tokenResponse);
     }
 }
