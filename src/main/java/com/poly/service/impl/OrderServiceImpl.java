@@ -13,6 +13,7 @@ import com.poly.repository.OrderRepository;
 import com.poly.service.OrderService;
 import com.poly.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j(topic = "ORDER-SERVICE")
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
@@ -97,7 +99,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderResponse convertToResponse(OrderEntity order) {
         return OrderResponse.builder()
                 .id(order.getId())
-                .status(order.getStatus()) // Không cần chuyển đổi nữa
+                .userId(order.getUserId()) // Thêm userId
+                .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())
                 .paymentMethod(order.getPaymentMethod())
                 .createdAt(order.getCreatedAt())
@@ -133,27 +136,45 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderPageResponse findAll(String keyword, String sort, int page, int size, String orderId, OrderStatus status, Date createdAt, BigDecimal totalAmount) {
-        Sort.Order order = new Sort.Order(Sort.Direction.DESC, "createdAt");
+        Sort.Order order;
+
+        // Xử lý sắp xếp theo các tùy chọn từ UI
         if (StringUtils.hasLength(sort)) {
-            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
-            Matcher matcher = pattern.matcher(sort);
-            if (matcher.find()) {
-                String columnName = matcher.group(1);
-                if (matcher.group(3).equalsIgnoreCase("asc")) {
-                    order = new Sort.Order(Sort.Direction.ASC, columnName);
+            // Newest/Oldest
+            if (sort.equals("newest")) {
+                order = new Sort.Order(Sort.Direction.DESC, "createdAt");
+            } else if (sort.equals("oldest")) {
+                order = new Sort.Order(Sort.Direction.ASC, "createdAt");
+            }
+            // Highest/Lowest amount
+            else if (sort.equals("highestAmount")) {
+                order = new Sort.Order(Sort.Direction.DESC, "totalAmount");
+            } else if (sort.equals("lowestAmount")) {
+                order = new Sort.Order(Sort.Direction.ASC, "totalAmount");
+            } else {
+                // Xử lý sort pattern "column:direction"
+                Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+                Matcher matcher = pattern.matcher(sort);
+                if (matcher.find()) {
+                    String columnName = matcher.group(1);
+                    if (matcher.group(3).equalsIgnoreCase("asc")) {
+                        order = new Sort.Order(Sort.Direction.ASC, columnName);
+                    } else {
+                        order = new Sort.Order(Sort.Direction.DESC, columnName);
+                    }
                 } else {
-                    order = new Sort.Order(Sort.Direction.DESC, columnName);
+                    order = new Sort.Order(Sort.Direction.DESC, "createdAt");
                 }
             }
+        } else {
+            order = new Sort.Order(Sort.Direction.DESC, "createdAt");
         }
 
-        int pageNo = 0;
-        if (page > 0) {
-            pageNo = page - 1;
-        }
-
+        // Xử lý phân trang
+        int pageNo = page > 0 ? page - 1 : 0;
         Pageable pageable = PageRequest.of(pageNo, size, Sort.by(order));
 
+        // Gọi repository để lấy dữ liệu
         Page<OrderEntity> orderEntities = orderRepository.findAllOrders(
                 keyword,
                 StringUtils.hasLength(orderId) ? Long.parseLong(orderId) : null,
@@ -176,7 +197,7 @@ public class OrderServiceImpl implements OrderService {
         response.setPageSize(size);
         response.setTotalElements(orderEntities.getTotalElements());
         response.setTotalPages(orderEntities.getTotalPages());
-        response.setOrders(orderList); // Thêm dòng này để set danh sách đơn hàng
+        response.setOrders(orderList); // Đảm bảo dòng này đã được thêm
 
         return response;
     }

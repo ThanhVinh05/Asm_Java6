@@ -41,10 +41,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findOrdersBetweenDates(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE (:keyword IS NULL OR LOWER(CAST(o.id AS string)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(o.note) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(o.paymentMethod) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "WHERE (:keyword IS NULL OR CAST(o.id AS string) LIKE CONCAT('%', :keyword, '%') OR " +
+            "LOWER(o.note) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(o.paymentMethod) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:orderId IS NULL OR o.id = :orderId) " +
             "AND (:status IS NULL OR o.status = :status) " +
-            "AND (:createdAt IS NULL OR DATE(o.createdAt) = DATE(:createdAt)) " +
+            "AND (:createdAt IS NULL OR CAST(o.createdAt AS date) = CAST(:createdAt AS date)) " + // Sử dụng CAST thay vì DATE()
             "AND (:totalAmount IS NULL OR o.totalAmount = :totalAmount)")
     Page<OrderEntity> findAllOrders(
             @Param("keyword") String keyword,

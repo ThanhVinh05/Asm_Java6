@@ -67,8 +67,7 @@ public class AppConfig {
 
                         // User endpoints
                         .requestMatchers("/user/profile", "/user/upd", "/user/change-pwd").authenticated()
-                        .requestMatchers("/user/list", "/user/{userId}").hasAuthority(UserType.ADMIN.name())
-                        .requestMatchers("/user/del/{userId}").hasAuthority(UserType.ADMIN.name())
+                        .requestMatchers("/user/list", "/user/{userId}","/user/del/{userId}").hasAuthority(UserType.ADMIN.name())
 
                         // Address endpoints
                         .requestMatchers("/address/**").authenticated()
@@ -78,7 +77,7 @@ public class AppConfig {
 
                         // Order endpoints
                         .requestMatchers("/order/**").authenticated()
-                        .requestMatchers("/admin/orders/**").hasAuthority(UserType.ADMIN.name())
+                        .requestMatchers("/order/list").hasAuthority(UserType.ADMIN.name())
 
                         // Any other request requires authentication
                         .anyRequest().authenticated()

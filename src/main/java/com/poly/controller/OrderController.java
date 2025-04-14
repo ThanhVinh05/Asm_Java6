@@ -157,7 +157,7 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/list")
+    @GetMapping("/list")  // URL riêng
     public ResponseEntity<Map<String, Object>> getAllOrders(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String sort,

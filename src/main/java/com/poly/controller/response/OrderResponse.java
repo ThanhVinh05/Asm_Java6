@@ -14,10 +14,10 @@ import java.util.Date;
 @Builder
 public class OrderResponse {
     private Long id;
+    private Long userId; // Thêm trường này
     private OrderStatus status;
     private BigDecimal totalAmount;
-    private String paymentMethod; // Thêm trường này
+    private String paymentMethod;
     private Date createdAt;
     private Date updatedAt;
-    private UserEntity user;
 }
