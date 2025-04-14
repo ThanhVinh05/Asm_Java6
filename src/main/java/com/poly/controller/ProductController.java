@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,16 +33,21 @@ public class ProductController {
     @GetMapping("/list")
     public Map<String, Object> getList(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) Long categoryId) { // Thêm categoryId
-        log.info("Get product list, page={}, size={}, categoryId={}", page, size, categoryId); // Thêm log
+            @RequestParam(required = false) String sort, // Tham số sort đã có
+            @RequestParam(defaultValue = "1") int page, // Sửa defaultValue thành 1 cho thân thiện với FE
+            @RequestParam(defaultValue = "6") int size,  // Sửa size mặc định nếu cần
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BigDecimal minPrice, // Thêm minPrice
+            @RequestParam(required = false) BigDecimal maxPrice  // Thêm maxPrice
+    ) {
+        log.info("Get product list, page={}, size={}, categoryId={}, keyword={}, minPrice={}, maxPrice={}, sort={}",
+                page, size, categoryId, keyword, minPrice, maxPrice, sort);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "product list");
-        result.put("data", productService.findAll(keyword, sort, page, size, categoryId)); // Truyền categoryId
+        // Truyền các tham số mới vào service
+        result.put("data", productService.findAll(keyword, sort, page, size, categoryId, minPrice, maxPrice));
         return result;
     }
 

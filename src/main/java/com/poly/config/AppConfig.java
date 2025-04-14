@@ -76,8 +76,14 @@ public class AppConfig {
                         .requestMatchers("/cart/**").authenticated()
 
                         // Order endpoints
-                        .requestMatchers("/order/**").authenticated()
-                        .requestMatchers("/order/list").hasAuthority(UserType.ADMIN.name())
+                        .requestMatchers("/order/list").hasAuthority(UserType.ADMIN.name()) // Keep admin restriction for full list
+                        .requestMatchers(HttpMethod.GET, "/order/user/**", "/order/{orderId}", "/order/details/{orderId}").authenticated() // User can view their own orders
+                        .requestMatchers(HttpMethod.PUT, "/order/{orderId}/cancel", "/order/{orderId}/status").authenticated() // User can cancel/update their own (logic in service)
+                        .requestMatchers(HttpMethod.POST, "/order/create").authenticated()
+                        .requestMatchers("/order/userDetails/{orderId}").hasAuthority(UserType.ADMIN.name()) // Admin only
+
+                        // Dashboard endpoints (NEW)
+                        .requestMatchers("/dashboard/**").hasAuthority(UserType.ADMIN.name()) // Restrict dashboard to ADMIN
 
                         // Any other request requires authentication
                         .anyRequest().authenticated()

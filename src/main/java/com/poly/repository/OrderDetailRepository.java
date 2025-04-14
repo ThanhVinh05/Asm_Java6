@@ -1,6 +1,7 @@
 package com.poly.repository;
 
 import com.poly.model.OrderDetailEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,4 +36,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
     // Query để lấy thông tin chi tiết đơn hàng kèm thông tin sản phẩm
     @Query("SELECT od FROM OrderDetailEntity od LEFT JOIN FETCH od.product WHERE od.orderId = :orderId")
     List<OrderDetailEntity> findOrderDetailsWithProduct(@Param("orderId") Long orderId);
+
+    @Query("SELECT p.id, p.productName, SUM(od.quantity) as totalQuantity, SUM(od.price * od.quantity) as totalRevenue " +
+            "FROM OrderDetailEntity od JOIN od.product p JOIN od.order o " +
+            "WHERE o.status = 'COMPLETED' " +
+            "GROUP BY p.id, p.productName ORDER BY totalQuantity DESC, totalRevenue DESC")
+    List<Object[]> findTopSellingProductsWithDetails(Pageable pageable);
 }

@@ -9,16 +9,20 @@ import com.poly.exception.ResourceNotFoundException;
 import com.poly.model.ProductEntity;
 import com.poly.repository.ProductRepository;
 import com.poly.service.ProductService;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,46 +36,79 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
-    public ProductPageResponse findAll(String keyword, String sort, int page, int size, Long categoryId) {
-        log.info("findAll start, page={}, size={}, categoryId={}", page, size, categoryId);
+    public ProductPageResponse findAll(String keyword, String sort, int page, int size, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice) {
+        log.info("findAll products with filters: keyword={}, sort={}, page={}, size={}, categoryId={}, minPrice={}, maxPrice={}",
+                keyword, sort, page, size, categoryId, minPrice, maxPrice);
 
-        Sort.Order order = new Sort.Order(Sort.Direction.ASC, "id");
-        if (StringUtils.hasLength(sort)) {
-            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
-            Matcher matcher = pattern.matcher(sort);
-            if (matcher.find()) {
-                String columnName = matcher.group(1);
-                if (matcher.group(3).equalsIgnoreCase("asc")) {
-                    order = new Sort.Order(Sort.Direction.ASC, columnName);
-                } else {
-                    order = new Sort.Order(Sort.Direction.DESC, columnName);
-                }
-            }
-        }
+        // 1. Xử lý Sắp xếp (Sort)
+        Sort sorting = buildSort(sort);
 
-        int pageNo = 0;
-        if (page > 0) {
-            pageNo = page - 1;
-        }
+        // 2. Xử lý Phân trang (Pageable)
+        int pageNo = Math.max(0, page - 1); // Đảm bảo page không âm
+        Pageable pageable = PageRequest.of(pageNo, size, sorting);
 
-        Pageable pageable = PageRequest.of(pageNo, size, Sort.by(order));
+        // 3. Xây dựng Điều kiện lọc (Specification)
+        Specification<ProductEntity> specification = buildSpecification(keyword, categoryId, minPrice, maxPrice);
 
-        Page<ProductEntity> entityPage;
+        // 4. Gọi Repository với Specification và Pageable
+        Page<ProductEntity> entityPage = productRepository.findAll(specification, pageable);
 
-        if (categoryId != null) {
-            entityPage = productRepository.findByCategoryId(categoryId, pageable);
-        } else if (StringUtils.hasLength(keyword)) {
-            keyword = "%" + keyword.toLowerCase() + "%";
-            entityPage = productRepository.searchByKeyword(keyword, pageable);
-        } else {
-            entityPage = productRepository.findAllActive(pageable);
-        }
+        log.info("Found {} products matching criteria.", entityPage.getTotalElements());
 
-        log.info("Pageable: {}", pageable);
-        log.info("EntityPage: {}", entityPage);
-
+        // 5. Chuyển đổi sang Response DTO
         return getProductPageResponse(page, size, entityPage);
     }
+
+    // Hàm xây dựng đối tượng Sort
+    private Sort buildSort(String sortParam) {
+        if (StringUtils.hasLength(sortParam)) {
+            switch (sortParam) {
+                case "price_low":
+                    return Sort.by(Sort.Direction.ASC, "productPrice");
+                case "price_high":
+                    return Sort.by(Sort.Direction.DESC, "productPrice");
+                case "newest":
+                    return Sort.by(Sort.Direction.DESC, "createdAt");
+                case "featured": // Featured có thể là mặc định hoặc một logic khác
+                default:
+                    return Sort.by(Sort.Direction.ASC, "id"); // Mặc định theo ID
+            }
+        }
+        return Sort.by(Sort.Direction.ASC, "id"); // Mặc định nếu không có sort
+    }
+
+    // Hàm xây dựng đối tượng Specification
+    private Specification<ProductEntity> buildSpecification(String keyword, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Luôn lọc theo status ACTIVE
+            predicates.add(criteriaBuilder.equal(root.get("status"), Status.ACTIVE));
+
+            // Lọc theo keyword (tìm trong tên sản phẩm)
+            if (StringUtils.hasLength(keyword)) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
+            }
+
+            // Lọc theo categoryId
+            if (categoryId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("categoryId"), categoryId));
+            }
+
+            // Lọc theo minPrice
+            if (minPrice != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("productPrice"), minPrice));
+            }
+
+            // Lọc theo maxPrice
+            if (maxPrice != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("productPrice"), maxPrice));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
 
     @Override
     public ProductResponse findById(Long id) {

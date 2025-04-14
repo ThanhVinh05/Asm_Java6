@@ -56,4 +56,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             @Param("totalAmount") BigDecimal totalAmount,
             Pageable pageable
     );
+
+    // Query để lấy tổng doanh thu theo status
+    @Query("SELECT SUM(o.totalAmount) FROM OrderEntity o WHERE o.status = :status")
+    BigDecimal sumTotalAmountByStatus(@Param("status") OrderStatus status); // Return BigDecimal
+
+    // Query để lấy các đơn hàng COMPLETED trong khoảng thời gian
+    // Sắp xếp theo createdAt để dễ xử lý trong service
+    @Query("SELECT o FROM OrderEntity o WHERE o.status = 'COMPLETED' AND o.createdAt BETWEEN :startDate AND :endDate ORDER BY o.createdAt ASC")
+    List<OrderEntity> findCompletedOrdersBetweenDates(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }
