@@ -294,6 +294,7 @@ public class UserServiceImpl implements UserService {
         user.setBirthday(req.getBirthday());
         user.setGender(req.getGender());
         user.setPhone(req.getPhone());
+        user.setType(req.getType());
         user.setEmail(req.getEmail());
 
         userRepository.save(user);

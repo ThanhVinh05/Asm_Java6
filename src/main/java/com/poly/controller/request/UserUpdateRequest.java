@@ -1,6 +1,7 @@
 package com.poly.controller.request;
 
 import com.poly.common.Gender;
+import com.poly.common.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +26,7 @@ public class UserUpdateRequest implements Serializable {
     private Date birthday;
     private Gender gender;
     private String phone;
+    private UserType type;
 
     @Email(message = "Email invalid")
     private String email;
